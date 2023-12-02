@@ -25,6 +25,27 @@ def base_station_utility_factory(total_vehicles, unit_benefit, computation_capab
     return func
 
 
+def c2_factory(k, theta, total_types):
+    def func(x):
+        return -x[k] + x[k - 1] + theta[k] * (x[total_types + k] - x[total_types + k - 1])
+
+    return func
+
+
+def c3_factory(k):
+    def func(x):
+        return x[k] - (x[k - 1] if k > 0 else 0)
+
+    return func
+
+
+def c4_factory(k, theta):
+    def func(x):
+        return theta[k] - x[k]
+
+    return func
+
+
 @app.route('/', methods=['POST'])
 def optimize():
     data = request.get_json()
@@ -44,13 +65,13 @@ def optimize():
     constraints = [
         {'type': 'eq', 'fun': lambda x: theta[0] * x[total_types] - x[0]},
     ] + [
-        {'type': 'eq', 'fun': lambda x: -x[k] + x[k - 1] + theta[k] * (x[total_types + k] - x[total_types + k - 1])}
+        {'type': 'eq', 'fun': c2_factory(k, theta, total_types)}
         for k in range(1, total_types)
     ] + [
-        {'type': 'ineq', 'fun': lambda x: x[k] - (x[k-1] if k > 0 else 0)}
+        {'type': 'ineq', 'fun': c3_factory(k)}
         for k in range(total_types)
     ] + [
-        {'type': 'ineq', 'fun': lambda x: theta[k] - x[k]}
+        {'type': 'ineq', 'fun': c4_factory(k, theta)}
         for k in range(total_types)
     ]
 
@@ -58,7 +79,16 @@ def optimize():
     result = minimize(f, np.random.random(2 * total_types), method='SLSQP', constraints=constraints)
     delta = result.x[:total_types]
     pie = result.x[total_types:]
+    x = result.x
+    print(theta[0] * x[total_types] - x[0])
+    print(c4_factory(0, theta)(x))
+    print(c4_factory(1, theta)(x))
+    print(c4_factory(2, theta)(x))
+    print(c4_factory(3, theta)(x))
+    print(c4_factory(4, theta)(x))
+    print(theta)
     print(result)
+
     return {
         'delta': delta.tolist(),
         'pie': pie.tolist(),
