@@ -47,7 +47,7 @@ def optimize():
         {'type': 'eq', 'fun': lambda x: -x[k] + x[k - 1] + theta[k] * (x[total_types + k] - x[total_types + k - 1])}
         for k in range(1, total_types)
     ] + [
-        {'type': 'ineq', 'fun': lambda x: x[k] - x[k-1] if k > 0 else x[k]}
+        {'type': 'ineq', 'fun': lambda x: x[k] - (x[k-1] if k > 0 else 0)}
         for k in range(total_types)
     ] + [
         {'type': 'ineq', 'fun': lambda x: theta[k] - x[k]}
