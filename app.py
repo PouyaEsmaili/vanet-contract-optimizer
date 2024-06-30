@@ -34,7 +34,7 @@ def c2_factory(k, theta, total_types):
 
 def c3_factory(k):
     def func(x):
-        return x[k] - (x[k - 1] if k > 0 else 0)
+        return x[k] - (x[k - 1] if k > 0 else 0.1)
 
     return func
 
@@ -49,6 +49,8 @@ def c4_factory(k, theta):
 @app.route('/', methods=['POST'])
 def optimize():
     data = request.get_json()
+    print(data)
+
     unit_benefit = data['unit_benefit']
     computation_capability = data['computation_capability']
     duration = data['duration']
@@ -79,15 +81,8 @@ def optimize():
     result = minimize(f, np.random.random(2 * total_types), method='SLSQP', constraints=constraints)
     delta = result.x[:total_types]
     pie = result.x[total_types:]
-    x = result.x
-    print(theta[0] * x[total_types] - x[0])
-    print(c4_factory(0, theta)(x))
-    print(c4_factory(1, theta)(x))
-    print(c4_factory(2, theta)(x))
-    print(c4_factory(3, theta)(x))
-    print(c4_factory(4, theta)(x))
-    print(theta)
-    print(result)
+    print(delta)
+    print(pie)
 
     return {
         'delta': delta.tolist(),
